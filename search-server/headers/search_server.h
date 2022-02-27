@@ -8,6 +8,7 @@
 #include <numeric>
 #include <utility>
 #include <stdexcept>
+
 #include "read_input_functions.h"
 #include "string_processing.h"
 #include "document.h"
@@ -21,32 +22,40 @@ public:
     template <typename StringContainer>
     explicit SearchServer(const StringContainer& stop_words);
     explicit SearchServer(const std::string& stop_words_text);
+
     void AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
     
     template <typename DocumentPredicate>
     std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentPredicate document_predicate) const;
-    
     std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentStatus status) const;
     std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
+
+    const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
+
     int GetDocumentCount() const;
-    std::vector<int>::const_iterator begin() const;
-    std::vector<int>::const_iterator end() const;
+
+    std::set<int>::const_iterator begin() const;
+    std::set<int>::const_iterator end() const;
+
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
+
     void RemoveDocument(int document_id);
-    std::vector<int> GetIdsOfDuplicates() const;
 
 private:
+
     struct DocumentData
     {
         int rating;
         DocumentStatus status;
     };
+
     struct QueryWord
     {
         std::string data;
         bool is_minus;
         bool is_stop;
     };
+
     struct Query
     {
         std::set<std::string> plus_words;
@@ -56,19 +65,20 @@ private:
     const std::set<std::string> stop_words_;
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
     std::map<int, std::map<std::string, double>> document_to_word_freqs_;
-    std::map<std::set<std::string>, int> count_equal_content_;
-    std::vector<int> ids_of_duplicated_docs_;
+    std::set<int> document_ids_;
     std::map<int, DocumentData> documents_;
-    std::vector<int> document_ids_;
     
     bool IsStopWord(const std::string& word) const;
     static bool IsValidWord(const std::string& word);
+
     std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
+
     static int ComputeAverageRating(const std::vector<int>& ratings);
+
     QueryWord ParseQueryWord(const std::string& text) const;
     Query ParseQuery(const std::string& text) const;
+
     double ComputeWordInverseDocumentFreq(const std::string& word) const;
-    const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
 
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(const Query& query, DocumentPredicate document_predicate) const;
@@ -153,4 +163,3 @@ void PrintMatchDocumentResult(int document_id, const std::vector<std::string>& w
 void AddDocument(SearchServer& search_server, int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings);
 void FindTopDocuments(const SearchServer& search_server, const std::string& raw_query);
 void MatchDocuments(const SearchServer& search_server, const std::string& query);
-void RemoveDuplicates(SearchServer& search_server);
