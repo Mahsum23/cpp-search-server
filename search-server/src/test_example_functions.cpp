@@ -1,15 +1,15 @@
-#include "remove_duplicates.h"
+#include "test_example_functions.h"
 
 using namespace std;
 
 void RemoveDuplicates(SearchServer& search_server)
 {
-    map<set<string>, int> count_docs;
+    map<set<string_view>, int> count_docs;
     set<int> ids_of_duplicates;
 
     for (int doc_id : search_server)
     {
-        set<string> words_in_doc;
+        set<string_view> words_in_doc;
         for (auto& [word, _] : search_server.GetWordFrequencies(doc_id))
         {
             words_in_doc.insert(word);
